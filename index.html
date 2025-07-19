@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文藝復興畫家猜謎遊戲</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #8B4513, #D2691E, #F4A460);
+            min-height: 100vh;
+            padding: 20px;
+            color: #2F1B14;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 248, 220, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            border: 3px solid #8B4513;
+        }
+
+        h1 {
+            text-align: center;
+            color: #8B4513;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            font-weight: bold;
+        }
+
+        .game-area {
+            text-align: center;
+        }
+
+        .painting-container {
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .painting {
+            max-width: 400px;
+            max-height: 400px;
+            width: 100%;
+            height: auto;
+            border: 8px solid #8B4513;
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .painting:hover {
+            transform: scale(1.02);
+        }
+
+        .painting-title {
+            font-size: 1.3em;
+            color: #8B4513;
+            margin-top: 15px;
+            font-style: italic;
+            font-weight: bold;
+        }
+
+        .question {
+            font-size: 1.4em;
+            margin: 20px 0;
+            color: #2F1B14;
+            font-weight: bold;
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 30px 0;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .option {
+            background: linear-gradient(145deg, #F5DEB3, #DEB887);
+            border: 3px solid #8B4513;
+            border-radius: 12px;
+            padding: 15px 20px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #2F1B14;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
+        }
+
+        .option:hover {
+            background: linear-gradient(145deg, #DEB887, #CD853F);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .option:active {
+            transform: translateY(0);
+        }
+
+        .option.correct {
+            background: linear-gradient(145deg, #90EE90, #32CD32);
+            border-color: #228B22;
+            animation: correctAnswer 0.6s ease;
+        }
+
+        .option.incorrect {
+            background: linear-gradient(145deg, #FFB6C1, #FF6347);
+            border-color: #DC143C;
+            animation: incorrectAnswer 0.6s ease;
+        }
+
+        @keyframes correctAnswer {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes incorrectAnswer {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+            100% { transform: translateX(0); }
+        }
+
+        .score-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #8B4513;
+        }
+
+        .next-btn, .start-btn {
+            background: linear-gradient(145deg, #CD853F, #8B4513);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .next-btn:hover, .start-btn:hover {
+            background: linear-gradient(145deg, #8B4513, #654321);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .final-score {
+            text-align: center;
+            font-size: 2em;
+            color: #8B4513;
+            margin: 30px 0;
+            padding: 20px;
+            background: rgba(255, 215, 0, 0.2);
+            border-radius: 15px;
+            border: 2px solid #DAA520;
+        }
+
+        .intro {
+            text-align: center;
+            font-size: 1.3em;
+            color: #2F1B14;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .loading {
+            text-align: center;
+            font-size: 1.2em;
+            color: #8B4513;
+            margin: 20px 0;
+        }
+
+        .explanation {
+            background: rgba(255, 248, 220, 0.9);
+            border: 2px solid #8B4513;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            font-size: 1.1em;
+            line-height: 1.6;
+            color: #2F1B14;
+            text-align: left;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .explanation h4 {
+            color: #8B4513;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+            text-align: center;
+        }
+
+        .explanation-content {
+            text-indent: 2em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 文藝復興畫家猜謎遊戲 🎨</h1>
+        
+        <div id="intro-screen" class="intro">
+            <p>歡迎來到文藝復興藝術世界！</p>
+            <p>觀察畫作，猜測畫家是誰。</p>
+            <p>共有 5 題，每題答對得 20 分！</p>
+            <button class="start-btn" onclick="startGame()">開始遊戲</button>
+        </div>
+
+        <div id="game-screen" class="game-area" style="display: none;">
+            <div class="score-info">
+                <span>題目: <span id="current-question">1</span>/5</span>
+                <span>分數: <span id="current-score">0</span></span>
+            </div>
+            
+            <div class="painting-container">
+                <img id="painting" class="painting" src="" alt="文藝復興畫作">
+                <div id="painting-title" class="painting-title"></div>
+            </div>
+            
+            <div class="question">這幅畫是哪位畫家的作品？</div>
+            
+            <div class="options" id="options">
+                <!-- 選項會動態生成 -->
+            </div>
+            
+            <div id="explanation" class="explanation" style="display: none;">
+                <h4>📚 作品介紹</h4>
+                <div id="explanation-content" class="explanation-content"></div>
+            </div>
+            
+            <button id="next-btn" class="next-btn" style="display: none;" onclick="nextQuestion()">下一題</button>
+        </div>
+
+        <div id="result-screen" class="game-area" style="display: none;">
+            <div class="final-score">
+                <h2>🏆 遊戲結束！ 🏆</h2>
+                <p>您的最終分數：<span id="final-score">0</span> / 100</p>
+                <div id="grade"></div>
+            </div>
+            <button class="start-btn" onclick="restartGame()">重新開始</button>
+        </div>
+    </div>
+
+    <script>
+        // 文藝復興畫作資料庫
+        const paintings = [
+            {
+                title: "蒙娜麗莎",
+                image: "images/mona_lisa.jpg",
+                artist: "李奧納多·達·文西",
+                options: ["李奧納多·達·文西", "米開朗基羅", "拉斐爾", "波提切利"],
+                explanation: "《蒙娜麗莎》創作於1503-1519年，是達文西最著名的作品。畫中女子神秘的微笑和達文西獨特的暈塗法(sfumato)技法，使這幅畫成為世界上最著名的肖像畫。目前收藏於法國羅浮宮。"
+            },
+            {
+                title: "最後的晚餐",
+                image: "images/last_supper.jpg",
+                artist: "李奧納多·達·文西",
+                options: ["米開朗基羅", "李奧納多·達·文西", "拉斐爾", "提香"],
+                explanation: "《最後的晚餐》創作於1495-1498年，描繪了耶穌告訴門徒中有人要背叛他的場景。達文西運用線性透視法和心理描繪，展現了每位門徒不同的反應。這幅壁畫位於義大利米蘭的聖瑪利亞修道院。"
+            },
+            {
+                title: "創世紀（創造亞當）",
+                image: "images/creation_of_adam.jpg",
+                artist: "米開朗基羅",
+                options: ["李奧納多·達·文西", "米開朗基羅", "拉斐爾", "卡拉瓦喬"],
+                explanation: "《創造亞當》是米開朗基羅在西斯汀教堂天花板上繪製的壁畫之一（1508-1512年）。畫面中上帝與亞當的手指即將觸碰的經典場景，象徵了生命的創造。米開朗基羅以精湛的人體解剖學知識，創造了文藝復興藝術的巔峰之作。"
+            },
+            {
+                title: "雅典學院",
+                image: "images/school_of_athens.jpg",
+                artist: "拉斐爾",
+                options: ["拉斐爾", "米開朗基羅", "李奧納多·達·文西", "丁托列托"],
+                explanation: "《雅典學院》創作於1509-1511年，是拉斐爾在梵蒂岡教皇宮繪製的壁畫。畫中匯集了古希臘的哲學家和學者，中央是柏拉圖和亞里斯多德。這幅作品完美體現了文藝復興時期對古典學術的推崇和人文主義精神。"
+            },
+            {
+                title: "維納斯的誕生",
+                image: "images/birth_of_venus.jpg",
+                artist: "波提切利",
+                options: ["波提切利", "拉斐爾", "提香", "李奧納多·達·文西"],
+                explanation: "《維納斯的誕生》創作於1484-1486年，描繪了羅馬神話中愛與美的女神維納斯從海中誕生的場景。波提切利運用線條的優美和色彩的和諧，創造了理想化的美。這幅畫現收藏於佛羅倫斯的烏菲茲美術館。"
+            },
+            {
+                title: "抱銀鼠的女子",
+                image: "images/lady_with_ermine.jpg",
+                artist: "李奧納多·達·文西",
+                options: ["米開朗基羅", "拉斐爾", "李奧納多·達·文西", "波提切利"],
+                explanation: "《抱銀鼠的女子》創作於1489-1491年，描繪的是米蘭公爵盧多維科的情婦切奇莉亞·加萊拉尼。達文西精湛地描繪了女子與銀鼠的互動，展現了他對動物習性的深入觀察和卓越的繪畫技巧。"
+            },
+            {
+                title: "春",
+                image: "images/primavera.jpg",
+                artist: "波提切利",
+                options: ["波提切利", "拉斐爾", "提香", "米開朗基羅"],
+                explanation: "《春》創作於1477-1482年，是波提切利的代表作之一。畫中描繪了羅馬神話中的春天女神和眾神的場景，體現了新柏拉圖主義對美和愛的理想化追求。作品充滿了象徵意義和詩意的美感。"
+            },
+            {
+                title: "西斯汀聖母",
+                image: "images/sistine_madonna.jpg",
+                artist: "拉斐爾",
+                options: ["拉斐爾", "米開朗基羅", "李奧納多·達·文西", "波提切利"],
+                explanation: "《西斯汀聖母》創作於1512年，是拉斐爾聖母畫的傑作之一。畫中聖母抱著聖嬰，兩側是聖西斯篤和聖芭芭拉，下方是兩個可愛的天使。拉斐爾以溫和的色調和優美的構圖，展現了宗教藝術的崇高之美。"
+            },
+            {
+                title: "大衛像",
+                image: "images/david.jpg",
+                artist: "米開朗基羅",
+                options: ["李奧納多·達·文西", "米開朗基羅", "拉斐爾", "多納泰羅"],
+                explanation: "《大衛像》創作於1501-1504年，是米開朗基羅的雕塑傑作。這座高達5.17公尺的大理石雕像描繪了聖經中的英雄大衛準備迎戰巨人歌利亞的瞬間。米開朗基羅精湛的解剖學知識和雕刻技藝，使這座雕像成為文藝復興藝術的象徵。"
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let gameQuestions = [];
+        let answered = false;
+
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        function startGame() {
+            // 隨機選擇5道題目
+            gameQuestions = shuffleArray(paintings).slice(0, 5);
+            currentQuestionIndex = 0;
+            score = 0;
+            
+            document.getElementById('intro-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'block';
+            document.getElementById('result-screen').style.display = 'none';
+            
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            if (currentQuestionIndex >= gameQuestions.length) {
+                showResults();
+                return;
+            }
+
+            answered = false;
+            const question = gameQuestions[currentQuestionIndex];
+            
+            // 更新題目資訊
+            document.getElementById('current-question').textContent = currentQuestionIndex + 1;
+            document.getElementById('current-score').textContent = score;
+            
+            // 清理之前的圖片容器
+            const container = document.querySelector('.painting-container');
+            const existingPlaceholder = container.querySelector('.image-placeholder');
+            if (existingPlaceholder) {
+                existingPlaceholder.remove();
+            }
+            
+            // 設置畫作
+            const paintingImg = document.getElementById('painting');
+            paintingImg.style.display = 'block'; // 確保圖片顯示
+            paintingImg.src = question.image;
+            
+            paintingImg.onerror = function() {
+                // 如果圖片載入失敗，創建一個美觀的替代顯示
+                this.style.display = 'none';
+                const container = this.parentElement;
+                
+                // 檢查是否已經有替代元素
+                let placeholder = container.querySelector('.image-placeholder');
+                if (!placeholder) {
+                    placeholder = document.createElement('div');
+                    placeholder.className = 'image-placeholder';
+                    placeholder.style.cssText = `
+                        width: 400px;
+                        height: 300px;
+                        background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
+                        border: 8px solid #8B4513;
+                        border-radius: 10px;
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: center;
+                        align-items: center;
+                        margin: 0 auto;
+                        color: #8B4513;
+                        font-size: 1.2em;
+                        text-align: center;
+                        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+                    `;
+                    placeholder.innerHTML = `
+                        <div style="font-size: 3em; margin-bottom: 10px;">🎨</div>
+                        <div style="font-weight: bold;">${question.title}</div>
+                        <div style="font-size: 0.9em; margin-top: 5px; color: #666;">圖片載入中...</div>
+                    `;
+                    container.insertBefore(placeholder, this);
+                }
+            };
+            
+            document.getElementById('painting-title').textContent = question.title;
+            
+            // 生成選項
+            const optionsContainer = document.getElementById('options');
+            optionsContainer.innerHTML = '';
+            
+            // 隨機排列選項
+            const shuffledOptions = shuffleArray(question.options);
+            
+            shuffledOptions.forEach(option => {
+                const button = document.createElement('button');
+                button.className = 'option';
+                button.textContent = option;
+                button.onclick = () => selectAnswer(option, question.artist);
+                optionsContainer.appendChild(button);
+            });
+            
+            // 隱藏說明和下一題按鈕
+            document.getElementById('explanation').style.display = 'none';
+            document.getElementById('next-btn').style.display = 'none';
+        }
+
+        function selectAnswer(selectedOption, correctAnswer) {
+            if (answered) return;
+            answered = true;
+            
+            const question = gameQuestions[currentQuestionIndex];
+            const options = document.querySelectorAll('.option');
+            
+            options.forEach(option => {
+                if (option.textContent === correctAnswer) {
+                    option.classList.add('correct');
+                } else if (option.textContent === selectedOption && selectedOption !== correctAnswer) {
+                    option.classList.add('incorrect');
+                }
+                option.style.pointerEvents = 'none';
+            });
+            
+            if (selectedOption === correctAnswer) {
+                score += 20;
+                document.getElementById('current-score').textContent = score;
+            }
+            
+            // 顯示作品說明
+            setTimeout(() => {
+                const explanationDiv = document.getElementById('explanation');
+                const explanationContent = document.getElementById('explanation-content');
+                
+                if (explanationDiv && explanationContent && question.explanation) {
+                    explanationContent.textContent = question.explanation;
+                    explanationDiv.style.display = 'block';
+                    
+                    // 平滑滾動到說明區域
+                    explanationDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                
+                document.getElementById('next-btn').style.display = 'block';
+            }, 1500);
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            loadQuestion();
+        }
+
+        function showResults() {
+            document.getElementById('game-screen').style.display = 'none';
+            document.getElementById('result-screen').style.display = 'block';
+            document.getElementById('final-score').textContent = score;
+            
+            const gradeElement = document.getElementById('grade');
+            let grade = '';
+            let emoji = '';
+            
+            if (score === 100) {
+                grade = '完美！您是文藝復興專家！';
+                emoji = '🌟';
+            } else if (score >= 80) {
+                grade = '優秀！您對文藝復興很了解！';
+                emoji = '🎨';
+            } else if (score >= 60) {
+                grade = '不錯！繼續學習文藝復興藝術！';
+                emoji = '📚';
+            } else if (score >= 40) {
+                grade = '還可以！多看看文藝復興畫作吧！';
+                emoji = '🤔';
+            } else {
+                grade = '加油！文藝復興藝術等您探索！';
+                emoji = '💪';
+            }
+            
+            gradeElement.innerHTML = `<h3>${emoji} ${grade} ${emoji}</h3>`;
+        }
+
+        function restartGame() {
+            startGame();
+        }
+
+        // 確保圖片正確載入
+        window.addEventListener('load', function() {
+            const images = document.querySelectorAll('img');
+            images.forEach(img => {
+                img.addEventListener('error', function() {
+                    console.log('圖片載入失敗:', this.src);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
